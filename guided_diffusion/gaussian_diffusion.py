@@ -230,7 +230,7 @@ class GaussianDiffusion:
         return posterior_mean, posterior_variance, posterior_log_variance_clipped
 
     def p_mean_variance(
-            self, model, x, t, clip_denoised=True, denoised_fn=None, model_kwargs=None
+            self, model, x, t, clip_denoised=True, denoised_fn=None, model_kwargs=None, input_tensor=None
     ):
         """
         Apply the model to get p(x_{t-1} | x_t), as well as a prediction of
@@ -257,7 +257,9 @@ class GaussianDiffusion:
 
         B, C = x.shape[:2]
         assert t.shape == (B,)
-        model_output = model(x, self._scale_timesteps(t), **model_kwargs)
+        model_input = th.cat([x, input_tensor], dim=1)
+        model_output = model(model_input, self._scale_timesteps(t), **model_kwargs)
+        # model_output = model(x, self._scale_timesteps(t), **model_kwargs)
 
         if self.model_var_type in [ModelVarType.LEARNED, ModelVarType.LEARNED_RANGE]:
             assert model_output.shape == (B, C * 2, *x.shape[2:])
@@ -401,6 +403,7 @@ class GaussianDiffusion:
             denoised_fn=None,
             cond_fn=None,
             model_kwargs=None,
+            input_tensor=None,
     ):
         """
         Sample x_{t-1} from the model at the given timestep.
@@ -426,6 +429,7 @@ class GaussianDiffusion:
             clip_denoised=clip_denoised,
             denoised_fn=denoised_fn,
             model_kwargs=model_kwargs,
+            input_tensor=input_tensor,
         )
         noise = th.randn_like(x)
         nonzero_mask = (
@@ -449,6 +453,7 @@ class GaussianDiffusion:
             model_kwargs=None,
             device=None,
             progress=False,
+            input_tensor=None,
     ):
         """
         Generate samples from the model.
@@ -480,6 +485,7 @@ class GaussianDiffusion:
                 model_kwargs=model_kwargs,
                 device=device,
                 progress=progress,
+                input_tensor=input_tensor,
         ):
             final = sample
         return final["sample"]
@@ -495,6 +501,7 @@ class GaussianDiffusion:
             model_kwargs=None,
             device=None,
             progress=False,
+            input_tensor=None,
     ):
         """
         Generate samples from the model and yield intermediate samples from
@@ -530,6 +537,7 @@ class GaussianDiffusion:
                     denoised_fn=denoised_fn,
                     cond_fn=cond_fn,
                     model_kwargs=model_kwargs,
+                    input_tensor=input_tensor,
                 )
                 yield out
                 img = out["sample"]
@@ -544,6 +552,7 @@ class GaussianDiffusion:
             cond_fn=None,
             model_kwargs=None,
             eta=0.0,
+            input_tensor=None,
     ):
         """
         Sample x_{t-1} from the model using DDIM.
@@ -557,6 +566,7 @@ class GaussianDiffusion:
             clip_denoised=clip_denoised,
             denoised_fn=denoised_fn,
             model_kwargs=model_kwargs,
+            input_tensor=input_tensor
         )
         if cond_fn is not None:
             out = self.condition_score(cond_fn, out, x, t, model_kwargs=model_kwargs)
@@ -668,6 +678,7 @@ class GaussianDiffusion:
             device=None,
             progress=False,
             eta=0.0,
+            input_tensor=None,
     ):
         """
         Use DDIM to sample from the model and yield intermediate samples from
@@ -702,6 +713,7 @@ class GaussianDiffusion:
                     cond_fn=cond_fn,
                     model_kwargs=model_kwargs,
                     eta=eta,
+                    input_tensor=input_tensor,
                 )
                 yield out
                 img = out["sample"]
@@ -777,7 +789,7 @@ class GaussianDiffusion:
                 terms["loss"] *= self.num_timesteps
         elif self.loss_type == LossType.MSE or self.loss_type == LossType.RESCALED_MSE:
             model_output = model(x_t_cat, self._scale_timesteps(t), **model_kwargs)
-
+            del x_t_cat
             if self.model_var_type in [ModelVarType.LEARNED, ModelVarType.LEARNED_RANGE, ]:
                 B, C = x_t.shape[:2]
                 assert model_output.shape == (B, C * 2, *x_t.shape[2:])

@@ -2,6 +2,7 @@ import math
 import os
 import random
 import torchio as tio
+from torchio import SubjectsLoader
 from PIL import Image
 import blobfile as bf
 from mpi4py import MPI
@@ -88,6 +89,47 @@ def load_data(
         yield from patch_loader
 
 
+def load_paired_subjects(fp3):
+    """
+    加载配对的 3T 和 7T 图像数据，组织为监督学习 IN-GT 格式。
+    Args:
+        fp3 (str): 3T 图像文件所在目录。
+        # fp7 (str): 7T 图像文件所在目录。
+        # postfix (str): 文件名后缀（如 ".nii.gz",".nii"）。
+    Returns:
+        list: 配对的 TorchIO Subject 对象列表，每个 Subject 包含 IN（3T）和 GT（7T）。
+    """
+    subjects = []
+    postfix = '.nii'
+    # 获取 3T 文件名列表
+    filenames_3T = [f for f in os.listdir(fp3) if f.endswith(postfix)]
+    parent_dir = os.path.dirname(fp3)
+    fp7 = os.path.join(parent_dir, "7T")
+
+    for filename in filenames_3T:
+        path_3T = os.path.join(fp3, filename)
+        path_7T = os.path.join(fp7, filename)
+
+        # 检查配对的 7T 图像是否存在
+        if not os.path.exists(path_7T):
+            print(f"Warning: Missing paired 7T image for {filename}. Skipping.")
+            continue
+
+        # 加载并归一化图像
+        rescale = tio.RescaleIntensity(out_min_max=(-1, 1))
+        t1_3T = rescale(tio.ScalarImage(path_3T))
+        t1_7T = rescale(tio.ScalarImage(path_7T))
+        subject = tio.Subject(
+            IN=t1_3T,  # 输入图像 (3T)
+            GT=t1_7T,  # 目标图像 (7T)
+            # id=filename
+        )
+        subjects.append(subject)
+
+    print(f"Loaded {len(subjects)} paired subjects.")
+    return subjects
+
+
 class ImageDataset(Dataset):
     def __init__(
             self,
@@ -131,46 +173,6 @@ class ImageDataset(Dataset):
             out_dict["y"] = np.array(self.local_classes[idx], dtype=np.int64)
         return np.transpose(arr, [2, 0, 1]), out_dict
 
-
-def load_paired_subjects(fp3):
-    """
-    加载配对的 3T 和 7T 图像数据，组织为监督学习 IN-GT 格式。
-    Args:
-        fp3 (str): 3T 图像文件所在目录。
-        # fp7 (str): 7T 图像文件所在目录。
-        # postfix (str): 文件名后缀（如 ".nii.gz",".nii"）。
-    Returns:
-        list: 配对的 TorchIO Subject 对象列表，每个 Subject 包含 IN（3T）和 GT（7T）。
-    """
-    subjects = []
-    postfix = '.nii'
-    # 获取 3T 文件名列表
-    filenames_3T = [f for f in os.listdir(fp3) if f.endswith(postfix)]
-    parent_dir = os.path.dirname(fp3)
-    fp7 = os.path.join(parent_dir, "7T")
-
-    for filename in filenames_3T:
-        path_3T = os.path.join(fp3, filename)
-        path_7T = os.path.join(fp7, filename)
-
-        # 检查配对的 7T 图像是否存在
-        if not os.path.exists(path_7T):
-            print(f"Warning: Missing paired 7T image for {filename}. Skipping.")
-            continue
-
-        # 加载并归一化图像
-        rescale = tio.RescaleIntensity(out_min_max=(0, 1))
-        t1_3T = rescale(tio.ScalarImage(path_3T))
-        t1_7T = rescale(tio.ScalarImage(path_7T))
-        subject = tio.Subject(
-            IN=t1_3T,  # 输入图像 (3T)
-            GT=t1_7T,  # 目标图像 (7T)
-            # id=filename
-        )
-        subjects.append(subject)
-
-    print(f"Loaded {len(subjects)} paired subjects.")
-    return subjects
 
 
 def _list_image_files_recursively(data_dir):

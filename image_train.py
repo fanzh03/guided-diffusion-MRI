@@ -32,6 +32,10 @@ def main():
         **args_to_dict(args, model_and_diffusion_defaults().keys())
     )
     model.to(dist_util.dev())
+    total_params = sum(p.numel() for p in model.parameters())
+    # trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f"总参数量: {total_params:,}")
+    # print(f"可训练参数量: {trainable_params:,}")
     schedule_sampler = create_named_schedule_sampler(args.schedule_sampler, diffusion)
 
     logger.log("creating data loader...")
@@ -77,8 +81,8 @@ def create_argparser():
         log_dir="",
         data_dir="",
         # data_val_dir="",
-        patch_size=(256,256,3),
-        patch_overlap=(16,16,0),
+        patch_size=(128,128,3),
+        patch_overlap=(8,8,0),
         batch_size=1,
         schedule_sampler="uniform",
         lr=1e-4,

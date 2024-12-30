@@ -37,7 +37,12 @@ def main():
     if args.use_fp16:
         model.convert_to_fp16()
     model.eval()
-
+    val_data = load_data(
+        data_dir=args.data_dir,
+        batch_size=args.batch_size,
+        patch_size=args.patch_size,
+        patch_overlap=args.patch_overlap, 
+    )
     logger.log("sampling...")
     all_images = []
     all_labels = []
@@ -48,6 +53,7 @@ def main():
                 low=0, high=NUM_CLASSES, size=(args.batch_size,), device=dist_util.dev()
             )
             model_kwargs["y"] = classes
+        model_input = next(val_data)
         sample_fn = (
             diffusion.p_sample_loop if not args.use_ddim else diffusion.ddim_sample_loop
         )
@@ -56,6 +62,7 @@ def main():
             (args.batch_size, 3, args.image_size, args.image_size),
             clip_denoised=args.clip_denoised,
             model_kwargs=model_kwargs,
+            input_tensor=model_input,
         )
         sample = ((sample + 1) * 127.5).clamp(0, 255).to(th.uint8)
         sample = sample.permute(0, 2, 3, 1)
@@ -93,8 +100,8 @@ def main():
 def create_argparser():
     defaults = dict(
         clip_denoised=True,
-        num_samples=10000,
-        batch_size=16,
+        num_samples=1000,
+        batch_size=1,
         use_ddim=False,
         model_path="",
     )
