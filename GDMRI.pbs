@@ -1,0 +1,15 @@
+#PBS    -N  MRI-gd
+#PBS    -o  /ghome/fanzh/guided-diffusion-MRI/result/MRIb4.out
+#PBS    -e  /ghome/fanzh/guided-diffusion-MRI/result/MRIb4.err
+#PBS    -l nodes=1:gpus=1:A
+#PBS    -r y
+cd $PBS_O_WORKDIR
+echo Time is `date`
+echo Directory is $PWD
+echo This job runs on following nodes:
+echo -n "Node:"
+cat $PBS_NODEFILE
+echo -n "Gpus:"
+cat $PBS_GPUFILE
+echo "CUDA_VISIBLE_DEVICES:"$CUDA_VISIBLE_DEVICES
+startdocker  -D /gdata2/fanzh/ -P /ghome/fanzh/  -c 'sh /ghome/fanzh/guided-diffusion-MRI/train.sh ' bit:5000/fanzh_gdmri
