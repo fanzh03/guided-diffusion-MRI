@@ -29,7 +29,7 @@ def classifier_defaults():
     Defaults for classifier models.
     """
     return dict(
-        image_size=64,
+        image_size=128,
         classifier_use_fp16=False,
         classifier_width=128,
         classifier_depth=2,
@@ -45,7 +45,7 @@ def model_and_diffusion_defaults():
     Defaults for image training.
     """
     res = dict(
-        image_size=64,
+        image_size=128,
         num_channels=128,
         num_res_blocks=2,
         num_heads=4,

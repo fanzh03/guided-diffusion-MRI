@@ -257,6 +257,9 @@ class GaussianDiffusion:
 
         B, C = x.shape[:2]
         assert t.shape == (B,)
+        device = x.device
+        input_tensor = input_tensor.to(device)
+        # model_input = torch.cat([x, input_tensor.to(device)], dim=1)
         model_input = th.cat([x, input_tensor], dim=1)
         model_output = model(model_input, self._scale_timesteps(t), **model_kwargs)
         # model_output = model(x, self._scale_timesteps(t), **model_kwargs)

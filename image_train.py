@@ -20,7 +20,7 @@ from guided_diffusion.script_util import (
 )
 from guided_diffusion.train_util import TrainLoop
 
-torch.cuda.empty_cache()  # 手动释放未使用显存
+# torch.cuda.empty_cache()  # 手动释放未使用显存
 def main():
     args = create_argparser().parse_args()
     tb_logger = SummaryWriter(log_dir=os.path.join(args.log_dir, 'tensorboard'))
@@ -35,6 +35,10 @@ def main():
     total_params = sum(p.numel() for p in model.parameters())
     # trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"总参数量: {total_params:,}")
+    logger.log(f"总参数量: {total_params:,}")
+    print(f"patch_size: {args.patch_size}")
+    print(f"batch_size: {args.batch_size}")
+    print(f"log_dir: {args.log_dir}")
     # print(f"可训练参数量: {trainable_params:,}")
     schedule_sampler = create_named_schedule_sampler(args.schedule_sampler, diffusion)
 
@@ -44,7 +48,9 @@ def main():
         batch_size=args.batch_size,
         patch_size=args.patch_size,
         patch_overlap=args.patch_overlap,
+        data_shuffle=args.data_shuffle,
     )
+    
     # val_data = load_data(
     #     data_dir=args.data_val_dir,
     #     batch_size=args.batch_size,
@@ -81,7 +87,7 @@ def create_argparser():
         log_dir="",
         data_dir="",
         # data_val_dir="",
-        patch_size=(128,128,3),
+        patch_size=(256,256,3),
         patch_overlap=(8,8,0),
         batch_size=1,
         schedule_sampler="uniform",
@@ -95,6 +101,7 @@ def create_argparser():
         resume_checkpoint="",
         use_fp16=False,
         fp16_scale_growth=1e-3,
+        data_shuffle=True,
     )
     defaults.update(model_and_diffusion_defaults())
     parser = argparse.ArgumentParser()

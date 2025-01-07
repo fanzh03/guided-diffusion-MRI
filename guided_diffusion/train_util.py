@@ -238,6 +238,7 @@ class TrainLoop:
                 )
 
             loss = (losses["loss"] * weights).mean()
+            self.tb_logger.add_scalar("train_mse_loss", loss, self.step)
             log_loss_dict(
                 self.diffusion, t, {k: v * weights for k, v in losses.items()}
             )

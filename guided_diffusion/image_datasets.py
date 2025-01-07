@@ -20,6 +20,7 @@ def load_data(
         max_queue_length=10000,
         num_workers=0,
         deterministic=False,
+        data_shuffle=True,
         # class_cond=False,
 ):
     """
@@ -67,7 +68,7 @@ def load_data(
         samples_per_volume=num_patches,
         sampler=sampler,
         num_workers=num_workers,
-        shuffle_patches=True,
+        shuffle_patches=data_shuffle,
     )
 
     # 构建 DataLoader
@@ -229,3 +230,54 @@ def random_crop_arr(pil_image, image_size, min_crop_frac=0.8, max_crop_frac=1.0)
     crop_y = random.randrange(arr.shape[0] - image_size + 1)
     crop_x = random.randrange(arr.shape[1] - image_size + 1)
     return arr[crop_y:crop_y + image_size, crop_x:crop_x + image_size]
+
+
+def calculate_psnr(img1, img2):
+    # img1 and img2 have range [0, 255]
+    img1 = img1.astype(np.float64)
+    img2 = img2.astype(np.float64)
+    mse = np.mean((img1 - img2) ** 2)
+    if mse == 0:
+        return float("inf")
+    PIXEL_MAX = 255.0
+    return 20 * math.log10(PIXEL_MAX / math.sqrt(mse))
+
+
+
+def save_combined_images(input_img, gt_img, generated_img, output_dir, image_idx):
+    """
+    将输入图片、GT图片和生成图片按通道垂直拼接后保存。
+    Args:
+        input_img: 输入图片，形状为 [H, W, C]。
+        gt_img: Ground Truth 图片，形状为 [H, W, C]。
+        generated_img: 生成图片，形状为 [H, W, C]。
+        output_dir: 保存拼接图像的目录。
+        image_idx: 当前图片索引。
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    combined_channels = []
+    psnr_values = []  # 存储每个通道的 PSNR
+
+    for channel in range(input_img.shape[-1]):
+        input_channel = input_img[..., channel]
+        gt_channel = gt_img[..., channel]
+        generated_channel = generated_img[..., channel]
+
+        # 计算每个通道的 PSNR
+        psnr = calculate_psnr(generated_channel, gt_channel)
+        psnr_values.append(psnr)
+
+        # 垂直拼接 [输入通道 | GT通道 | 生成通道]
+        combined_channel = np.vstack([input_channel, gt_channel, generated_channel])
+        # combined_channels.append(combined_channel)
+        # 保存拼接后的图像
+        combined_save_path = os.path.join(output_dir, f"combined_image_{image_idx}_c_{channel}.png")
+        Image.fromarray(combined_channel.astype(np.uint8)).save(combined_save_path)
+
+    # # 合并所有通道为 RGB（或保持单通道）
+    # if len(combined_channels) == 3:  # RGB 图片
+    #     combined_image = np.stack(combined_channels, axis=-1)
+    # else:  # 单通道灰度图片
+    #     combined_image = combined_channels[0]
+
+    return psnr_values
