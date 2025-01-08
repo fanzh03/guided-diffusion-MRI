@@ -48,7 +48,6 @@ def main():
         batch_size=args.batch_size,
         patch_size=args.patch_size,
         patch_overlap=args.patch_overlap,
-        data_shuffle=args.data_shuffle,
     )
     
     # val_data = load_data(
@@ -101,7 +100,6 @@ def create_argparser():
         resume_checkpoint="",
         use_fp16=False,
         fp16_scale_growth=1e-3,
-        data_shuffle=True,
     )
     defaults.update(model_and_diffusion_defaults())
     parser = argparse.ArgumentParser()

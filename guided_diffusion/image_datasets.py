@@ -76,14 +76,14 @@ def load_data(
         patch_loader = DataLoader(
             patches,
             batch_size=batch_size,
-            pin_memory=False,  # False
+            pin_memory=False,
             shuffle=False,
         )
     else:
         patch_loader = DataLoader(
             patches,
             batch_size=batch_size,
-            pin_memory=False,  # False
+            pin_memory=False,
             shuffle=True,
         )
     while True:

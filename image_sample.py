@@ -44,6 +44,7 @@ def main():
         patch_size=args.patch_size,
         patch_overlap=args.patch_overlap,
         data_shuffle=args.data_shuffle,
+        deterministic=args.deterministic,
     )
     logger.log("sampling...")
     
@@ -161,13 +162,14 @@ def create_argparser():
         log_dir="",
         data_dir="",
         patch_size=(256,256,3),
-        patch_overlap=(0,0,2),
+        patch_overlap=(0,8,0),
         clip_denoised=True,
-        num_samples=500,
+        num_samples=1000,
         batch_size=1,
         use_ddim=False,
         model_path="",
         data_shuffle=False,
+        deterministic=True,
     )
     defaults.update(model_and_diffusion_defaults())
     parser = argparse.ArgumentParser()

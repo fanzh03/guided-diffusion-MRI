@@ -175,6 +175,15 @@ class TrainLoop:
             batch_7 = np.transpose(batch_7, (0, 3, 1, 2))
         else:
             raise TypeError("Unsupported data type. Expected torch.Tensor or numpy.ndarray.")
+         # 遍历 batch 中的每个样本，按 p=0.1 的概率将其替换为全黑图
+        for i in range(batch_3.shape[0]):
+            if random.random() < 0.05:  # 对每个样本有 5% 的概率替换
+                if isinstance(batch_3, th.Tensor):
+                    batch_3[i] = th.zeros_like(batch_3[i])  # 替换为全零
+                    batch_7[i] = th.zeros_like(batch_7[i])
+                elif isinstance(batch_3, np.ndarray):
+                    batch_3[i] = np.zeros_like(batch_3[i])
+                    batch_7[i] = np.zeros_like(batch_7[i])
 
         return batch_3, batch_7, {}
 

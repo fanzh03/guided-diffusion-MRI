@@ -21,6 +21,5 @@ python /ghome/fanzh/guided-diffusion-MRI/image_train.py \
         --resblock_updown True \
         --use_scale_shift_norm True \
         --lr_anneal_steps 500000 \
-        --data_shuffle True
         # --patch_size 256,256,3 \
         # --patch_overlap 8,8,0 \
