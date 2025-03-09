@@ -1,6 +1,6 @@
-#PBS    -N  MRIgda40-test1
-#PBS    -o  /ghome/fanzh/guided-diffusion-MRI/result/MRIb256b8.out
-#PBS    -e  /ghome/fanzh/guided-diffusion-MRI/result/MRIb256b8.err
+#PBS    -N  MRIgda30-testz
+#PBS    -o  /ghome/fanzh/guided-diffusion-MRI/result/MRIb256b8tz.out
+#PBS    -e  /ghome/fanzh/guided-diffusion-MRI/result/MRIb256b8tz.err
 #PBS    -l nodes=1:gpus=1:A
 #PBS    -r y
 cd $PBS_O_WORKDIR

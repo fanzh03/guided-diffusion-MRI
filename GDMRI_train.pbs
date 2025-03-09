@@ -1,8 +1,9 @@
-#PBS    -N  MRIgda40-8-2
-#PBS    -o  /ghome/fanzh/guided-diffusion-MRI/result1/MRIb256b8.out
-#PBS    -e  /ghome/fanzh/guided-diffusion-MRI/result1/MRIb256b8.err
+#PBS    -N  MRIgda401-12
+#PBS    -o  /ghome/fanzh/guided-diffusion-MRI/result2/MRIb256b12.out
+#PBS    -e  /ghome/fanzh/guided-diffusion-MRI/result2/MRIb256b12.err
 #PBS    -l nodes=1:gpus=1:a
 #PBS    -r y
+#PBS    -l walltime=600:00:00
 cd $PBS_O_WORKDIR
 echo Time is `date`
 echo Directory is $PWD

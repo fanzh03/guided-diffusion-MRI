@@ -52,7 +52,7 @@ def main():
     psnr_list = []  # 用于记录每张图片每个通道的 PSNR
 
     image_idx = 0  # 图像计数
-    output_dir = os.path.join(args.log_dir, "combined_images")  # 保存拼接图像的目录
+    output_dir = os.path.join(args.log_dir, "combined_imagesz")  # 保存拼接图像的目录
     while len(psnr_list) * args.batch_size < args.num_samples:
         model_kwargs = {}
         if args.class_cond:
@@ -162,7 +162,7 @@ def create_argparser():
         log_dir="",
         data_dir="",
         patch_size=(256,256,3),
-        patch_overlap=(0,8,0),
+        patch_overlap=(0,0,0),
         clip_denoised=True,
         num_samples=1000,
         batch_size=1,

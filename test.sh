@@ -6,9 +6,9 @@
 # python /ghome/fanzh/IRODE/RFODE_code/train.py -opt=/ghome/fanzh/IRODE/RFODE_code/rf-NAFNet.yml
 python /ghome/fanzh/guided-diffusion-MRI/image_sample.py \
         --data_dir '/gdata2/fanzh/nii_data/T1_val/3T' \
-        --model_path '/gdata2/fanzh/MRI/log40/model240000.pt' \
+        --model_path '/gdata2/fanzh/MRI/log40112/model500000.pt' \
         --log_dir  '/gdata2/fanzh/MRI/log_result' \
-        --batch_size 4 \
+        --batch_size 1 \
         --image_size 256 \
         --attention_resolutions 32,16,8 \
         --num_channels 256 \
